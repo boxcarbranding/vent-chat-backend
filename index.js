@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const supabase = require('./supabase'); // ← Your Supabase client file
 const { v4: uuidv4 } = require('uuid');
+const { OpenAI } = require('openai');
+
 
 const app = express();
 app.use(cors());
