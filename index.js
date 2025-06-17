@@ -1,4 +1,5 @@
 require('dotenv').config(); // Load your .env file
+const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const supabase = require('./supabase'); // ← Your Supabase client file
@@ -7,9 +8,6 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const ASSISTANT_ID = process.env.ASSISTANT_ID;
 
 app.post('/chat', async (req, res) => {
   const { message: userMessage, sessionId } = req.body;
