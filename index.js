@@ -22,7 +22,7 @@ app.post('/chat', async (req, res) => {
     const { data: property, error: propError } = await supabase
       .from('properties')
       .select('assistant_id')
-      .eq('slug', propertySlug)
+      .eq('property_slug', propertySlug)
       .single();
 
     if (propError || !property?.assistant_id) {
