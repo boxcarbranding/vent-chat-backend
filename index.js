@@ -61,7 +61,7 @@ app.post('/chat', async (req, res) => {
           user_message: userMessage,
           assistant_response: lastMessage,
           property_slug: propertySlug,
-          timestamp: new Date().toISOString()
+timestamp: new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' })
         }
       ]);
 
