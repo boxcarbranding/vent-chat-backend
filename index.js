@@ -12,12 +12,25 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/chat', async (req, res) => {
-  const { message: userMessage, sessionId } = req.body;
-  if (!userMessage) return res.status(400).json({ error: 'No message provided' });
+  const { message: userMessage, sessionId, propertySlug } = req.body;
+  if (!userMessage || !propertySlug) {
+    return res.status(400).json({ error: 'Missing message or propertySlug' });
+  }
 
   try {
+    // 🔍 Fetch assistant_id based on propertySlug from Supabase
+    const { data: property, error: propError } = await supabase
+      .from('properties')
+      .select('assistant_id')
+      .eq('slug', propertySlug)
+      .single();
+
+    if (propError || !property?.assistant_id) {
+      return res.status(404).json({ error: 'Assistant not found for property' });
+    }
+
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const ASSISTANT_ID = process.env.ASSISTANT_ID;
+    const ASSISTANT_ID = property.assistant_id;
 
     const thread = await openai.beta.threads.create();
 
@@ -40,19 +53,20 @@ app.post('/chat', async (req, res) => {
     const lastMessage = messages.data[0].content[0].text.value;
 
     // ✅ Log conversation to Supabase
-    const { error } = await supabase
+    const { error: logError } = await supabase
       .from('chat_logs')
       .insert([
         {
           session_id: sessionId || uuidv4(),
           user_message: userMessage,
           assistant_response: lastMessage,
+          property_slug: propertySlug,
           timestamp: new Date().toISOString()
         }
       ]);
 
-    if (error) {
-      console.error('❌ Failed to log chat to Supabase:', error);
+    if (logError) {
+      console.error('❌ Failed to log chat to Supabase:', logError);
     }
 
     res.json({ reply: lastMessage });
@@ -61,6 +75,7 @@ app.post('/chat', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
+
 
 
 const PORT = process.env.PORT || 3000;
