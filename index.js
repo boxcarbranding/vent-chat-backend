@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/chat', async (req, res) => {
-  const { message: userMessage, sessionId, propertySlug } = req.body;
+const { message, sessionId, propertySlug } = req.body;
   if (!userMessage || !propertySlug) {
     return res.status(400).json({ error: 'Missing message or propertySlug' });
   }
@@ -36,7 +36,7 @@ const threadId = await getOrCreateThreadId(sessionId);
 
 await openai.beta.threads.messages.create(threadId, {
   role: 'user',
-  content: userMessage
+  content: message
 });
 
 const run = await openai.beta.threads.runs.create(threadId, {
