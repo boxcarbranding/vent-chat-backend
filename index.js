@@ -13,12 +13,12 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/chat', async (req, res) => {
-const { message: userMessage, sessionId, propertySlug } = req.body;
+const { message, sessionId, propertySlug } = req.body;
 console.log('📥 Message received:', message);
 console.log('📍 Property slug:', propertySlug);
 console.log('🔗 Session ID:', sessionId);
 
-  if (!userMessage || !propertySlug) {
+  if (!message || !propertySlug) {
     return res.status(400).json({ error: 'Missing message or propertySlug' });
   }
 
@@ -50,11 +50,11 @@ const run = await openai.beta.threads.runs.create(threadId, {
 
     let runStatus;
     do {
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
       await new Promise(r => setTimeout(r, 1000));
     } while (runStatus.status !== 'completed');
 
-    const messages = await openai.beta.threads.messages.list(thread.id);
+    const messages = await openai.beta.threads.messages.list(threadId);
     const lastMessage = messages.data[0].content[0].text.value;
 
     // ✅ Log conversation to Supabase
@@ -63,7 +63,7 @@ const run = await openai.beta.threads.runs.create(threadId, {
       .insert([
         {
           session_id: sessionId || uuidv4(),
-          user_message: userMessage,
+          user_message: message,
           assistant_response: lastMessage,
           property_slug: propertySlug,
 timestamp: new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' })
