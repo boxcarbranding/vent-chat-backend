@@ -14,6 +14,10 @@ app.use(express.json());
 
 app.post('/chat', async (req, res) => {
 const { message, sessionId, propertySlug } = req.body;
+console.log('📥 Message received:', message);
+console.log('📍 Property slug:', propertySlug);
+console.log('🔗 Session ID:', sessionId);
+
   if (!userMessage || !propertySlug) {
     return res.status(400).json({ error: 'Missing message or propertySlug' });
   }
