@@ -7,7 +7,6 @@ const { v4: uuidv4 } = require('uuid');
 const { OpenAI } = require('openai');
 import { getOrCreateThreadId } from './getOrCreateThreadId.js';
 import { openai } from './openai.js';
-import { getOrCreateThreadId } from './getOrCreateThreadId.js';
 
 const app = express();
 app.use(cors());
