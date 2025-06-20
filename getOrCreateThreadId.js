@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js';
-import { openai } from './openai.js';
+const supabase = require('./supabase.js');
+const { openai } = require('./openai.js');
 
-export async function getOrCreateThreadId(sessionId) {
+async function getOrCreateThreadId(sessionId) {
   const { data, error } = await supabase
     .from('user_sessions')
     .select('thread_id')
@@ -20,3 +20,5 @@ export async function getOrCreateThreadId(sessionId) {
 
   return thread.id;
 }
+
+module.exports = { getOrCreateThreadId };
