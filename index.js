@@ -5,7 +5,9 @@ const bodyParser = require('body-parser');
 const supabase = require('./supabase'); // ← Your Supabase client file
 const { v4: uuidv4 } = require('uuid');
 const { OpenAI } = require('openai');
-
+import { getOrCreateThreadId } from './getOrCreateThreadId.js';
+import { openai } from './openai.js';
+import { getOrCreateThreadId } from './getOrCreateThreadId.js';
 
 const app = express();
 app.use(cors());
@@ -29,19 +31,19 @@ app.post('/chat', async (req, res) => {
       return res.status(404).json({ error: 'Assistant not found for property' });
     }
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
     const ASSISTANT_ID = property.assistant_id;
+const threadId = await getOrCreateThreadId(sessionId);
 
-    const thread = await openai.beta.threads.create();
+await openai.beta.threads.messages.create(threadId, {
+  role: 'user',
+  content: userMessage
+});
 
-    await openai.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: userMessage
-    });
+const run = await openai.beta.threads.runs.create(threadId, {
+  assistant_id: ASSISTANT_ID
+});
 
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: ASSISTANT_ID
-    });
 
     let runStatus;
     do {
