@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/chat', async (req, res) => {
-const { message, sessionId, propertySlug } = req.body;
+const { message: userMessage, sessionId, propertySlug } = req.body;
 console.log('📥 Message received:', message);
 console.log('📍 Property slug:', propertySlug);
 console.log('🔗 Session ID:', sessionId);
