@@ -33,42 +33,39 @@ app.post('/chat', async (req, res) => {
       return res.status(404).json({ error: 'Assistant not found for property' });
     }
 
-    const ASSISTANT_ID = property.assistant_id;
-    const threadId = await getOrCreateThreadId(sessionId);
+   const ASSISTANT_ID = property.assistant_id;
+const threadId = await getOrCreateThreadId(sessionId);
 
-    // 🔍 Check if assistant has already asked for contact info in this session
-    const { data: sessionData, error: sessionError } = await supabase
-      .from('user_sessions')
-      .select('has_asked_for_contact')
-      .eq('session_id', sessionId)
-      .single();
+// 🔍 Check if assistant has already asked for contact info in this session
+const { data: sessionData, error: sessionError } = await supabase
+  .from('user_sessions')
+  .select('has_asked_for_contact')
+  .eq('session_id', sessionId)
+  .single();
 
-    if (sessionError) {
-      console.error('⚠️ Could not fetch session contact flag:', sessionError);
-    }
+if (sessionError) {
+  console.error('⚠️ Could not fetch session contact flag:', sessionError);
+}
 
-    const hasAskedForContact = sessionData?.has_asked_for_contact ?? false;
+const hasAskedForContact = sessionData?.has_asked_for_contact ?? false;
 
-    const contactInstruction = hasAskedForContact
-      ? "Do NOT ask the user to leave their contact information again."
-      : "Encourage the user once to leave their contact information using the form below. Only do this once per session.";
+// 💬 Optional runtime nudge — only if needed
+const contactInstruction = hasAskedForContact
+  ? null
+  : "If the user hasn't already been asked, you may encourage them one time to leave their contact info using the form below.";
 
-    const systemInstructions = `
-You are a helpful assistant to a commercial realtor. Your job is to provide smart, brief HTML responses about the property at ${propertySlug}.
-${contactInstruction}
-    `;
+// 📩 Submit the user message to the assistant thread
+await openai.beta.threads.messages.create(threadId, {
+  role: 'user',
+  content: message
+});
 
-    // 📩 Submit the user message to the assistant thread
-    await openai.beta.threads.messages.create(threadId, {
-      role: 'user',
-      content: message
-    });
+// 🧠 Run the assistant using platform instructions, with optional extra note
+const run = await openai.beta.threads.runs.create(threadId, {
+  assistant_id: ASSISTANT_ID,
+  ...(contactInstruction && { instructions: contactInstruction })
+});
 
-    // 🧠 Run the assistant with context-aware instructions
-    const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: ASSISTANT_ID,
-      instructions: systemInstructions
-    });
 
     // ⏳ Wait for the run to complete
     let runStatus;
