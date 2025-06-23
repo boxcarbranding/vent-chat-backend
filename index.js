@@ -62,10 +62,8 @@ await openai.beta.threads.messages.create(threadId, {
 
 // 🧠 Run the assistant using platform instructions, with optional extra note
 const run = await openai.beta.threads.runs.create(threadId, {
-  assistant_id: ASSISTANT_ID,
-  ...(contactInstruction && { instructions: contactInstruction })
+  assistant_id: ASSISTANT_ID
 });
-
 
     // ⏳ Wait for the run to complete
     let runStatus;
